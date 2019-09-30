@@ -1,15 +1,17 @@
 import React from 'react';
-import { withRouter,Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import AppConfig from '../AppConfig';
 
 class LoginForm extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {userid: '', password: ''};
+    this.state = {userid: '', password: '', name: '', description: ''};
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleUseridChange = this.handleUseridChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
+    this.handleNameChange = this.handleNameChange.bind(this);
+    this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
   }
 
   handleUseridChange(event) {
@@ -18,6 +20,14 @@ class LoginForm extends React.Component {
 
   handlePasswordChange(event) {
     this.setState({password: event.target.value});
+  }
+
+  handleNameChange(event) {
+    this.setState({name: event.target.value});
+  }
+
+  handleDescriptionChange(event) {
+    this.setState({description: event.target.value});
   }
 
   handleSubmit(event) {
@@ -29,17 +39,12 @@ class LoginForm extends React.Component {
     let option = {
       mode: "cors",
       method: "POST",
-      body: JSON.stringify({userid:this.state.userid, password:this.state.password}),
+      body: JSON.stringify({userid:this.state.userid, password:this.state.password, name:this.state.name, description:this.state.description}),
       headers: myheaders
     };
-    fetch(AppConfig.API_SERVER + "/api/v1/login",option)
+    fetch(AppConfig.API_SERVER + "/api/v1/user",option)
     .then(res =>{
-      return res.json()
-     }).then(json =>{
-      if(json.sucess)
-      {
-        this.props.history.push({pathname: "/chat", state:{token: json.token} });
-      }
+      alert("user add sucess");
     });
   }
   render() {
@@ -53,8 +58,15 @@ class LoginForm extends React.Component {
           Password:
           <input type="text" value={this.state.password} onChange={this.handlePasswordChange} />
         </label>
+        <label>
+          UserName:
+          <input type="text" value={this.state.name} onChange={this.handleNameChange} />
+        </label>
+        <label>
+          Description:
+          <input type="text" value={this.state.description} onChange={this.handleDescriptionChange} />
+        </label>
         <input type="submit" value="Login" />
-        <Link to="/newuser">Registor new account</Link>
       </form>
     );
   }
