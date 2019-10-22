@@ -38,7 +38,7 @@ class LoginForm extends React.Component {
      }).then(json =>{
       if(json.sucess)
       {
-        this.props.history.push({pathname: "/chat", state:{token: json.token} });
+        this.props.history.push({pathname: "/room", state:{token: json.token} });
       }
     });
   }

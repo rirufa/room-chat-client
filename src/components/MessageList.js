@@ -18,11 +18,12 @@ class MessageList extends React.Component{
 
   handleSubmit(event) {
     event.preventDefault();
+    let roomid = this.props.location.state.id
     if(this.socket != null)
-      this.socket.emit('sendall', {value:this.state.text});
+      this.socket.emit('send', {roomid: roomid, value: this.state.text});
   }
 
-  componentWillMount() {
+  componentDidMount() {
     let token = this.props.location.state.token;
     if(token === '')
       return;
@@ -33,8 +34,11 @@ class MessageList extends React.Component{
       this.state.messageList.push(msg.value);
       this.setState({text:'', messageList: this.state.messageList});
     });
-    this.state.messageList.push('login success');
+    let roomid = this.props.location.state.id;
+    this.state.messageList.push('join to' +  roomid);
     this.setState({text:'', messageList: this.state.messageList});
+    if(this.socket != null)
+      this.socket.emit('join', {roomid: roomid});
   }
 
   componentWillUnmount() {
