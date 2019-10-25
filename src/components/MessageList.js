@@ -12,6 +12,16 @@ class MessageList extends React.Component{
     this.handleTextChange = this.handleTextChange.bind(this);
   }
 
+  sendmsg(eventname, arg) {
+    if(this.socket == null)
+      throw "socket is null";
+    return new Promise((resolve,reject)=>{
+      this.socket.emit(eventname, arg, (r)=>{
+        return resolve(r);
+      });
+    });
+  }
+
   handleTextChange(event) {
     this.setState({text: event.target.value});
   }
@@ -19,8 +29,7 @@ class MessageList extends React.Component{
   handleSubmit(event) {
     event.preventDefault();
     let roomid = this.props.location.state.id
-    if(this.socket != null)
-      this.socket.emit('send', {roomid: roomid, value: this.state.text});
+    this.sendmsg('send', {roomid: roomid, content: this.state.text});
   }
 
   componentDidMount() {
@@ -30,15 +39,18 @@ class MessageList extends React.Component{
     if(this.socket != null)
       return;
     this.socket = io(AppConfig.API_SERVER + "/api/v1/chat-stream?token=" + token);
-    this.socket.on('receive', (msg) => {
-      this.state.messageList.push(msg.value);
+    this.socket.on('receive', (msgs) => {
+      for(let msg of msgs)
+        this.state.messageList.push(msg.content);
       this.setState({text:'', messageList: this.state.messageList});
     });
     let roomid = this.props.location.state.id;
     this.state.messageList.push('join to' +  roomid);
     this.setState({text:'', messageList: this.state.messageList});
-    if(this.socket != null)
-      this.socket.emit('join', {roomid: roomid});
+    this.sendmsg('join', {roomid: roomid})
+    .then((r)=>{
+      this.sendmsg('fetchall', {roomid: roomid});
+    });
   }
 
   componentWillUnmount() {
