@@ -6,6 +6,9 @@ import NewUser from './components/NewUser';
 import NewRoom from './components/NewRoom';
 import RoomList from './components/RoomList';
 
+//ログインキーを格納する
+localStorage.token = null;
+
 class App extends React.Component {
   render() {
     return (

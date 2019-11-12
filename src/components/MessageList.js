@@ -33,8 +33,8 @@ class MessageList extends React.Component{
   }
 
   componentDidMount() {
-    let token = this.props.location.state.token;
-    if(token === '')
+    let token = localStorage.token;
+    if(token === '' || token === null)
       return;
     if(this.socket != null)
       return;

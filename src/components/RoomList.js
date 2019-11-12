@@ -9,8 +9,8 @@ class RoomList extends React.Component{
   }
 
   componentWillMount() {
-    let token = this.props.location.state.token;
-    if(token === '')
+    let token = localStorage.token;
+    if(token === '' || token == null)
       return;
     let myheaders = new Headers();
     myheaders.append("Accept", "application/json")
@@ -40,7 +40,7 @@ class RoomList extends React.Component{
       <div>
         <ul>{
           this.state.roomList.map((m,i)=>{
-            return <li key={i}><Link to={{pathname:'/chat', state:{id:m.id,token:this.props.location.state.token} }}>{m.name}</Link></li>
+            return <li key={i}><Link to={{pathname:'/chat', state:{id:m.id} }}>{m.name}</Link></li>
           })
         }</ul>
         <Link to="/newroom">Add room</Link>
