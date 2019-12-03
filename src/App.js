@@ -5,6 +5,7 @@ import LoginForm from './components/LoginForm';
 import NewUser from './components/NewUser';
 import NewRoom from './components/NewRoom';
 import RoomList from './components/RoomList';
+import AppConfig from './AppConfig';
 
 //ログインキーを格納する
 localStorage.token = null;

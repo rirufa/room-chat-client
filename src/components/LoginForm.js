@@ -1,6 +1,7 @@
 import React from 'react';
 import { withRouter,Link } from "react-router-dom";
 import AppConfig from '../AppConfig';
+import { ApiClient } from '../ApiClient';
 
 class LoginForm extends React.Component {
   constructor(props) {
@@ -23,24 +24,23 @@ class LoginForm extends React.Component {
   handleSubmit(event) {
     event.preventDefault();
 
-    let myheaders = new Headers();
-    myheaders.append("Accept", "application/json")
-    myheaders.append("Content-Type", "application/json")
-    let option = {
-      mode: "cors",
-      method: "POST",
-      body: JSON.stringify({userid:this.state.userid, password:this.state.password}),
-      headers: myheaders
-    };
-    fetch(AppConfig.API_SERVER + "/api/v1/login",option)
-    .then(res =>{
-      return res.json()
-     }).then(json =>{
-      if(json.sucess)
-      {
-        localStorage.token = json.token;
-        this.props.history.push({pathname: "/room"});
-      }
+     let client = new ApiClient();
+     client.QueryAsync(`
+          query ($userid:String!, $password:String!){
+            userGetToken(filter:{ userid:$userid,password:$password }){
+              sucess
+              token
+            }
+          }
+     `,{userid:this.state.userid, password:this.state.password})
+     .then(result =>{
+        let json = result.data.userGetToken;
+        console.log(result);
+        if(json.sucess)
+        {
+          localStorage.token = json.token;
+          this.props.history.push({pathname: "/room"});
+        }
     });
   }
   render() {
