@@ -5,10 +5,10 @@ import gql from 'graphql-tag';
 const client = new ApolloClient({
   uri: AppConfig.GRAPHQL_SERVER,
   request: operation => {
-    let token = localStorage.token
+    let token = localStorage.token;
     operation.setContext({
       headers: {
-        "x-access-token": token ? `Bearer ${token}` : ''
+        "x-access-token": token
       }
     });
   }
