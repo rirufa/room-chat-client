@@ -1,6 +1,7 @@
 import React from 'react';
 import { withRouter,Link } from "react-router-dom";
 import AppConfig from '../AppConfig';
+import { ApiClient } from '../ApiClient';
 
 class RoomList extends React.Component{
   constructor(props) {
@@ -12,27 +13,23 @@ class RoomList extends React.Component{
     let token = localStorage.token;
     if(token === '' || token == null)
       return;
-    let myheaders = new Headers();
-    myheaders.append("Accept", "application/json")
-    myheaders.append("Content-Type", "application/json")
-    let option = {
-      mode: "cors",
-      method: "GET",
-      headers: myheaders
-    };
-    fetch(AppConfig.API_SERVER + "/api/v1/room",option)
-    .then(res =>{
-      return res.json()
-     }).then(json =>{
-      if(json.sucess)
-      {
-        for(const item of json.content)
+     let client = new ApiClient();
+     client.QueryAsync(`
+       {
+         roomMany{
+           id
+           name
+           description
+         }
+       }`)
+     .then(result =>{
+        let json = result.data.roomMany;
+        for(const item of json)
         {
           this.state.roomList.push(item);
         }
-      }
-      this.setState({roomList: this.state.roomList});
-    });
+        this.setState({roomList: this.state.roomList});
+     });
   }
 
   render(){
