@@ -1,6 +1,7 @@
 import React from 'react';
 import { withRouter } from "react-router-dom";
 import AppConfig from '../AppConfig';
+import { ApiClient } from '../ApiClient';
 
 class LoginForm extends React.Component {
   constructor(props) {
@@ -33,16 +34,18 @@ class LoginForm extends React.Component {
   handleSubmit(event) {
     event.preventDefault();
 
-    let myheaders = new Headers();
-    myheaders.append("Accept", "application/json")
-    myheaders.append("Content-Type", "application/json")
-    let option = {
-      mode: "cors",
-      method: "POST",
-      body: JSON.stringify({userid:this.state.userid, password:this.state.password, name:this.state.name, description:this.state.description}),
-      headers: myheaders
-    };
-    fetch(AppConfig.API_SERVER + "/api/v1/user",option)
+    let client = new ApiClient();
+    client.MutateAsync(`
+        mutation($userid:String!,$password:String!,$name:String,$description:String){
+          userCreate(record:{userid:$userid,password:$password,name:$name,description:$description}){
+            userid
+          }
+        }`, {
+        userid:this.state.userid,
+        password:this.state.password,
+        name:this.state.name,
+        description:this.state.description
+    })
     .then(res =>{
       alert("user add sucess");
     });

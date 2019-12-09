@@ -19,4 +19,7 @@ export class ApiClient
   QueryAsync(query,variables){
     return client.query({query:gql(query),variables:variables});
   }
+  MutateAsync(query,variables){
+    return client.mutate({mutation :gql(query),variables:variables});
+  }
 }
