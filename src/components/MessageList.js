@@ -1,25 +1,26 @@
 import React from 'react';
-import io from 'socket.io-client';
 import { withRouter } from "react-router-dom";
-import AppConfig from '../AppConfig';
+import { ApiClient } from '../ApiClient';
 
 class MessageList extends React.Component{
   constructor(props) {
     super(props);
     this.state = {text:'',messageList:[]};
-    this.socket = null;
+    this.subscriber = null;
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleTextChange = this.handleTextChange.bind(this);
   }
 
-  sendmsg(eventname, arg) {
-    if(this.socket == null)
-      throw "socket is null";
-    return new Promise((resolve,reject)=>{
-      this.socket.emit(eventname, arg, (r)=>{
-        return resolve(r);
-      });
-    });
+  sendmsg(msg) {
+    let roomid = this.props.location.state.id;
+    let client = new ApiClient();
+    return client.MutateAsync(`
+      mutation($roomid:String!,$content:String){
+      	messageCreate(record:{roomid:$roomid,content:$content}){
+          content
+        }
+      }
+    `,{roomid: roomid, content:msg})
   }
 
   handleTextChange(event) {
@@ -28,33 +29,59 @@ class MessageList extends React.Component{
 
   handleSubmit(event) {
     event.preventDefault();
-    let roomid = this.props.location.state.id
-    this.sendmsg('send', {roomid: roomid, content: this.state.text});
+    this.sendmsg(this.state.text);
   }
 
   componentDidMount() {
     let token = localStorage.token;
-    if(token === '' || token === null)
+    if(token === '' || token === null || this.subscriber != null)
       return;
-    if(this.socket != null)
-      return;
-    this.socket = io(AppConfig.API_SERVER + "/api/v1/chat-stream?token=" + token);
-    this.socket.on('receive', (msgs) => {
-      for(let msg of msgs)
-        this.state.messageList.push(msg.content);
-      this.setState({text:'', messageList: this.state.messageList});
-    });
     let roomid = this.props.location.state.id;
-    this.state.messageList.push('join to' +  roomid);
-    this.setState({text:'', messageList: this.state.messageList});
-    this.sendmsg('join', {roomid: roomid})
-    .then((r)=>{
-      this.sendmsg('fetchall', {roomid: roomid});
+    let _this = this;
+
+    let client = new ApiClient();
+    this.subscriber = client.SubscribeAsync(`
+      subscription($roomid:String){
+        messageAdded(filter:{roomid:$roomid})
+        {
+          content
+        }
+      }`,{roomid: roomid})
+    .subscribe({
+       next(result){
+         console.log(this);
+         let json = result.data.messageAdded;
+         if(json == null)
+           return;
+         //‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚ÅŽ–‘O‚ÉS‘©‚µ‚Ä‚¨‚¢‚½this‚ðŽg‚¤
+         _this.state.messageList.push(json.content);
+         _this.setState({text:'', messageList: _this.state.messageList});
+      }
     });
+
+    client.QueryAsync(`
+      query($roomid:String){
+        messageById(filter:{roomid:$roomid})
+        {
+          content
+          senderid{
+            userid
+          }
+        }
+      }
+    `,{roomid: roomid})
+     .then(result =>{
+        let json = result.data.messageById;
+        for(const item of json)
+        {
+          this.state.messageList.push(item.content);
+        }
+        this.setState({text:'', messageList: this.state.messageList});
+     });
   }
 
   componentWillUnmount() {
-    this.socket = null;
+    this.subscriber = null;
   }
 
   render(){
