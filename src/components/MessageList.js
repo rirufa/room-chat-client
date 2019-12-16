@@ -15,12 +15,12 @@ class MessageList extends React.Component{
     let roomid = this.props.location.state.id;
     let client = new ApiClient();
     return client.MutateAsync(`
-      mutation($roomid:String!,$content:String){
-      	messageCreate(record:{roomid:$roomid,content:$content}){
+      mutation($roomid:String!,$content:String,$senderid:String){
+      	messageCreate(record:{roomid:$roomid,content:$content,senderid:$senderid}){
           content
         }
       }
-    `,{roomid: roomid, content:msg})
+    `,{roomid: roomid, content:msg, senderid: localStorage.user})
   }
 
   handleTextChange(event) {
@@ -45,6 +45,9 @@ class MessageList extends React.Component{
         messageAdded(filter:{roomid:$roomid})
         {
           content
+          senderid{
+            name
+          }
         }
       }`,{roomid: roomid})
     .subscribe({
@@ -54,7 +57,7 @@ class MessageList extends React.Component{
          if(json == null)
            return;
          //‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Å–‘O‚ÉS‘©‚µ‚Ä‚¨‚¢‚½this‚ğg‚¤
-         _this.state.messageList.push(json.content);
+         _this.state.messageList.push(json);
          _this.setState({text:'', messageList: _this.state.messageList});
       }
     });
@@ -65,7 +68,7 @@ class MessageList extends React.Component{
         {
           content
           senderid{
-            userid
+            name
           }
         }
       }
@@ -74,7 +77,7 @@ class MessageList extends React.Component{
         let json = result.data.messageById;
         for(const item of json)
         {
-          this.state.messageList.push(item.content);
+          this.state.messageList.push(item);
         }
         this.setState({text:'', messageList: this.state.messageList});
      });
@@ -93,7 +96,7 @@ class MessageList extends React.Component{
         </form>
         <ul>{
           this.state.messageList.map((m,i)=>{
-            return <li key={i}>{m}</li>
+            return <li key={i}>{m.senderid.name}&nbsp;{m.content}</li>
           })
         }</ul>
       </div>

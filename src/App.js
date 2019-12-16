@@ -9,6 +9,7 @@ import AppConfig from './AppConfig';
 
 //ログインキーを格納する
 localStorage.token = null;
+localStorage.user = null;
 
 class App extends React.Component {
   render() {

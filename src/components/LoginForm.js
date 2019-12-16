@@ -30,6 +30,9 @@ class LoginForm extends React.Component {
             userGetToken(filter:{ userid:$userid,password:$password }){
               sucess
               token
+              user{
+                id
+              }
             }
           }
      `,{userid:this.state.userid, password:this.state.password})
@@ -39,6 +42,7 @@ class LoginForm extends React.Component {
         if(json.sucess)
         {
           localStorage.token = json.token;
+          localStorage.user = json.user.id;
           this.props.history.push({pathname: "/room"});
         }
     });
